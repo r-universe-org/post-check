@@ -1,0 +1,34 @@
+inputs:
+  package:
+    description: 'Name of the package'
+    required: true
+  sourcepkg:
+    description: 'File of the source package'
+    required: true
+outputs:
+  binarypkg:
+    description: 'Name of the binary package output'
+    value: ${{steps.checkoutput.outputs.binarypkg}}
+
+runs:
+  using: "composite"
+  steps: 
+    - id: checkoutput
+      name: Inspect check outputs
+      shell: bash
+      run: |
+        SOURCEPKG="${{ inputs.sourcepkg }}"      
+        BINEXT=$(echo $RUNNER_OS | sed 's/Windows/zip/' | sed 's/macOS/tgz/')
+        BINARYPKG="${SOURCEPKG%tar.gz}${BINEXT}"
+        LOGFILE="${{ inputs.package }}.Rcheck/00install.out"
+        if [ -f ${LOGFILE} ]; then
+          echo " ===== Printing: ${LOGFILE} ====="
+          cat "${LOGFILE}"
+          echo " ===== THE END ====="
+        fi
+        if [ -f "${BINARYPKG}" ]; then
+          echo "Found binary package: $BINARYPKG"
+          echo ::set-output name=binarypkg::$BINARYPKG
+        else
+          echo "No binary package $BINARYPKG found. Skipping deployment."
+        fi
