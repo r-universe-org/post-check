@@ -21,11 +21,16 @@ runs:
         BINEXT=$(echo $RUNNER_OS | sed 's/Windows/zip/' | sed 's/macOS/tgz/')
         BINARYPKG="${SOURCEPKG%tar.gz}${BINEXT}"
         LOGFILE="${{ inputs.package }}.Rcheck/00install.out"
+        CHECKFILE=$(find "${{ inputs.package }}.Rcheck" -name 'testthat.Rout*')
         if [ -f ${LOGFILE} ]; then
-          echo " ===== Printing: ${LOGFILE} ====="
+          echo "::group::Printing: ${LOGFILE}"
           cat "${LOGFILE}"
-          echo " ===== THE END ====="
+          echo "::endgroup::"
         fi
+        if [ -f ${CHECKFILE} ]; then
+          echo "::group::Printing: ${CHECKFILE}"
+          cat "${CHECKFILE}"
+          echo "::endgroup::"
         if [ -f "${BINARYPKG}" ]; then
           echo "Found binary package: $BINARYPKG"
           echo ::set-output name=binarypkg::$BINARYPKG
