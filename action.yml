@@ -20,19 +20,10 @@ runs:
         SOURCEPKG="${{ inputs.sourcepkg }}"      
         BINEXT=$(echo $RUNNER_OS | sed 's/Windows/zip/' | sed 's/macOS/tgz/')
         BINARYPKG="${SOURCEPKG%tar.gz}${BINEXT}"
-        LOGFILE="${{ inputs.package }}.Rcheck/00install.out"
-        if [ -f ${LOGFILE} ]; then
-          echo "::group::Printing: ${LOGFILE}"
-          cat "${LOGFILE}"
-          echo "::endgroup::"
-          echo "::group::Test outputs"
-          find "${{ inputs.package }}.Rcheck" -name 'testthat.Rout*' -print -exec cat {} +
-          find "${{ inputs.package }}.Rcheck" -name '*.fail' -print -exec cat {} +
-          echo "::endgroup::"
-        fi
         if [ -f "${BINARYPKG}" ]; then
           echo "Found binary package: $BINARYPKG"
           echo ::set-output name=binarypkg::$BINARYPKG
         else
           echo "No binary package $BINARYPKG found. Skipping deployment."
         fi
+        find . -regex '.*\.R*out' | while read f; do echo "::group::$f"; cat $f; echo "::endgroup::"; done
